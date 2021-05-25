@@ -57,6 +57,8 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
             handle_regular_file(dir_list[i].file_id, out + "/" + dir_list[i].name);
         } else if (S_ISLNK(mode)) {
             handle_symlink(dir_list[i].file_id, out + "/" + dir_list[i].name);
+        } else {
+            fprintf(stderr, "Unknown object type: mode is %d\n", mode);
         }
     }
 
