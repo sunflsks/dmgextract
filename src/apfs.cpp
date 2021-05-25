@@ -1,4 +1,3 @@
-
 #include "apfs.hpp"
 #include <ApfsLib/ApfsDir.h>
 #include <ApfsLib/Decmpfs.h>
@@ -7,6 +6,12 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#ifdef WIN32
+#include <windows.h>
+#define     S_IFLNK       0120000 /* Symbolic link.  */
+#define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
+#endif
 
 #define APFS_ROOT_INODE 2
 
@@ -118,6 +123,10 @@ bool APFSWriter::handle_symlink(uint64_t inode, const std::string& name) {
         return false;
     }
 
+#ifdef WIN32
+    CreateSymbolicLinkA(name.c_str(), NULL, 0x02);
+#else
     symlink(reinterpret_cast<const char*>(buffer.data()), name.c_str());
+#endif
     return true;
 }

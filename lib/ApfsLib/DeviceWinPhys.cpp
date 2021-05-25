@@ -34,13 +34,14 @@ DeviceWinPhys::~DeviceWinPhys()
 
 bool DeviceWinPhys::Open(const char *name)
 {
-	TCHAR path[MAX_PATH];
+	// TCHAR path[MAX_PATH];
+	const char* path = name;
 	uint8_t buf[0x1000];
 	DWORD bytes_ret = 0;
 
 	// _stprintf_s(path, _T("\\\\.\\PhysicalDrive%d"), disk);
 
-	MultiByteToWideChar(CP_UTF8, 0, name, -1, path, MAX_PATH);
+	// MultiByteToWideChar(CP_UTF8, 0, name, -1, path, MAX_PATH);
 
 	m_drive = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, nullptr);
 	if (m_drive == INVALID_HANDLE_VALUE)

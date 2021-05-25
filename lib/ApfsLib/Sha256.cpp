@@ -3,7 +3,7 @@
 
 #include "Sha256.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #include <intrin.h>
 #else
 static inline uint32_t _rotr(uint32_t v, int sh)

@@ -4,6 +4,10 @@ project(dmgextract)
 
 set (CMAKE_CXX_STANDARD 17)
 
+if (WIN32)
+    add_compile_definitions(WINVER=0x0600 _WIN32_WINNT=0x0600)
+endif()
+
 add_library(lzfse
         lib/lzfse/src/lzfse.h
         lib/lzfse/src/lzfse_decode.c
@@ -90,4 +94,4 @@ add_library(apfs
 include_directories(lib lib/lzfse/src)
 
 add_executable(dmgextract src/apfs.cpp src/main.cpp)
-target_link_libraries(dmgextract z bz2 apfs lzfse)
+target_link_libraries(dmgextract apfs lzfse bz2 z)

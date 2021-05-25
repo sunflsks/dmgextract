@@ -28,7 +28,7 @@ Also helps making the driver run on big-endian architectures.
 #define APFS_LITTLE_ENDIAN
 #undef APFS_BIG_ENDIAN
 
-#ifdef _MSC_VER
+#ifdef WIN32
 // Definitions for Visual Studio
 #include <intrin.h>
 

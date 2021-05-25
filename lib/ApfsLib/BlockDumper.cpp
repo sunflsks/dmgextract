@@ -2122,7 +2122,7 @@ std::string BlockDumper::tstamp(uint64_t apfs_time)
 	nanos = apfs_time % 1000000000ULL;
 	secs = apfs_time / 1000000000ULL;
 
-#ifdef _MSC_VER
+#ifdef WIN32
 	gmtime_s(&gmt, &secs);
 #else
 	gmtime_r(&secs, &gmt);
