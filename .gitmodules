@@ -1,0 +1,3 @@
+[submodule "lib/apfs-fuse"]
+	path = lib/apfs-fuse
+	url = git://github.com/sgan81/apfs-fuse
