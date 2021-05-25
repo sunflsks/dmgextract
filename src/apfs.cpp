@@ -10,8 +10,8 @@
 
 #ifdef WIN32
 #include <windows.h>
-#define     S_IFLNK       0120000 /* Symbolic link.  */
-#define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
+#define S_IFLNK 0120000 /* Symbolic link.  */
+#define S_ISLNK(m) (((m)&S_IFMT) == S_IFLNK)
 #endif
 
 #define APFS_ROOT_INODE 2
