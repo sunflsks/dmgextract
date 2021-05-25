@@ -1,6 +1,7 @@
 #include "apfs.hpp"
 #include <ApfsLib/ApfsDir.h>
 #include <ApfsLib/Decmpfs.h>
+#include <cinttypes>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -19,20 +20,19 @@ static bool is_inode_compressed(ApfsDir::Inode inode) {
     return (inode.bsd_flags & APFS_UF_COMPRESSED) != 0;
 }
 
-APFSWriter::APFSWriter(ApfsVolume* volume, bool init_inode_count, std::string output_prefix) {
+APFSWriter::APFSWriter(ApfsVolume* volume,
+                       std::string output_prefix,
+                       const apfs_superblock_t& superblock) {
     this->volume = volume;
-    this->init_inode_count = init_inode_count;
     this->output_prefix = output_prefix + "/";
+    total_object_count =
+      superblock.apfs_num_files + superblock.apfs_num_directories + superblock.apfs_num_symlinks;
     dir = new ApfsDir(*volume);
-
-    if (init_inode_count) {
-        this->initialize_number_of_inodes(APFS_ROOT_INODE);
-    }
 }
 
 APFSWriter::~APFSWriter() {
     delete dir;
-    printf("Wrote %lld/%lld inodes\n", count, total_inode_count);
+    printf("Wrote %" PRIu64 "/%" PRIu64 " objects\n", count, total_object_count);
 }
 
 bool APFSWriter::write_contents_of_tree(uint64_t inode) {
@@ -46,7 +46,7 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
     for (size_t i = 0; i < dir_list.size(); i++) {
         // do not keep calling printf
         if (count % 50 == 0) {
-            printf("Wrote %lld/%lld inodes\r", count, total_inode_count);
+            printf("Wrote %" PRIu64 "/%" PRIu64 " objects\r", count, total_object_count);
             fflush(stdout);
         }
         count++;
@@ -62,19 +62,6 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
 
     // reset dir for the next volume
     return 0;
-}
-
-void APFSWriter::initialize_number_of_inodes(uint64_t inode) {
-    std::vector<ApfsDir::DirRec> dir_list;
-    dir->ListDirectory(dir_list, inode);
-
-    for (size_t i = 0; i < dir_list.size(); i++) {
-        total_inode_count++;
-        mode_t mode = (dir_list[i].flags & DREC_TYPE_MASK) << 12;
-        if (S_ISDIR(mode)) {
-            initialize_number_of_inodes(dir_list[i].file_id);
-        }
-    }
 }
 
 bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {

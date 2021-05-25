@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
         auto volume = std::unique_ptr<ApfsVolume>(container->GetVolume(i));
         APFSWriter writer(
-          volume.get(), true, std::string(argv[2]) + "/Volume " + std::to_string(i) + "/out");
+          volume.get(), std::string(argv[2]) + "/Volume " + std::to_string(i) + "/out", superblock);
         writer.write_contents_of_tree(APFS_ROOT_INODE);
     }
 }
