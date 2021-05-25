@@ -4,6 +4,7 @@
 #include <ApfsLib/ApfsVolume.h>
 #include <ApfsLib/GptPartitionMap.h>
 #include <cassert>
+#include <cinttypes>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
     }
 
     size = device->GetSize();
-    printf("Found device %lld MB large\n", size / (1024 * 1024));
+    printf("Found device %" PRIu64 " MB large\n", size / (1024 * 1024));
     if (size == 0) {
         fprintf(stderr, "Device should not have a size of 0. It's probably invalid.\n");
         return EBADMSG;

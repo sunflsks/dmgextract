@@ -71,13 +71,14 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
     mode_t mode = inodeobj.mode;
     std::vector<uint8_t> file_contents(4096);
 
-    if (inodeobj.bsd_flags & APFS_UF_COMPRESSED) {
+    if (is_inode_compressed(inodeobj)) {
         std::vector<uint8_t> compressed(4096);
         bool rc = dir->GetAttribute(compressed, inode, "com.apple.decmpfs");
         if (!rc) {
             fprintf(stderr,
                     "File %s seems to be compressed, but has no com.apple.decmpfs attribute. "
-                    "Weird! Not writing this file out.\n");
+                    "Weird! Not writing this file out.\n",
+                    name.c_str());
             return false;
         }
         DecompressFile(*dir, inode, file_contents, compressed);
