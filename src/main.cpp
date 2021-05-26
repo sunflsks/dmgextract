@@ -1,4 +1,5 @@
-#include "apfs.hpp"
+#include "APFSWriter.hpp"
+#include "utils.hpp"
 #include <ApfsLib/ApfsContainer.h>
 #include <ApfsLib/ApfsDir.h>
 #include <ApfsLib/ApfsVolume.h>
