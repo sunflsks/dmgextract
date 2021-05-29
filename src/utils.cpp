@@ -2,6 +2,14 @@
 #include <cstdarg>
 #include <cstdio>
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#endif // WIN32
+
+static int get_terminal_width();
+
 int Utilities::print(Utilities::Status status, const char* fmt, ...) {
     FILE* output_stream = nullptr;
     const char* prefix = nullptr;
@@ -40,5 +48,44 @@ int Utilities::print(Utilities::Status status, const char* fmt, ...) {
     int ret = vfprintf(output_stream, fmt, args);
     va_end(args);
     fputs(reset, output_stream);
+    return ret;
+}
+
+void Utilities::print_progress(uint64_t current_progress, uint64_t total_progress, bool final) {
+    int width =
+      get_terminal_width() - 2; // subtract 2 for the opening and closing brackets on the bar
+    int how_much_to_print = (((float)current_progress / total_progress) * width);
+    how_much_to_print = how_much_to_print < width ? how_much_to_print : width;
+
+    putc('[', stdout);
+
+    int curpos;
+    for (curpos = 0; curpos < how_much_to_print; curpos++) {
+        putc('=', stdout);
+    }
+
+    for (int i = curpos; i < width; i++) {
+        putc(' ', stdout);
+    }
+
+    if (final) {
+        fputs("]\n", stdout);
+    } else {
+        fputs("]\r", stdout);
+        fflush(stdout);
+    }
+}
+
+static int get_terminal_width() {
+    int ret;
+#ifdef WIN32
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+    ret = info.dwSize.X;
+#else
+    struct winsize ws;
+    ioctl(1, TIOCGWINSZ, &ws);
+    ret = ws.ws_col;
+#endif
     return ret;
 }
