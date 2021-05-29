@@ -25,6 +25,12 @@ int main(int argc, char** argv) {
     char opt;
     bool vflag = false;
 
+#ifdef WIN32
+    Utilities::print(Utilities::MSG_STATUS_WARNING,
+                     "Windows detected. Please run as administrator or with developer mode enabled "
+                     "for symlink support.\n");
+#endif // WIN32
+
     while ((opt = getopt(argc, argv, "i:o:v:")) != -1) {
         switch (opt) {
             case 'i': {
