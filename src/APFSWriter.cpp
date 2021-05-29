@@ -1,4 +1,5 @@
 #include "APFSWriter.hpp"
+#include "utils.hpp"
 #include <ApfsLib/ApfsDir.h>
 #include <ApfsLib/Decmpfs.h>
 #include <cinttypes>
@@ -25,14 +26,14 @@ APFSWriter::APFSWriter(ApfsVolume* volume,
                        const apfs_superblock_t& superblock) {
     this->volume = volume;
     this->output_prefix = output_prefix + "/";
-    total_object_count =
-      superblock.apfs_num_files + superblock.apfs_num_directories + superblock.apfs_num_symlinks;
+    total_object_count = superblock.apfs_num_files + superblock.apfs_num_directories +
+                         superblock.apfs_num_symlinks + superblock.apfs_num_other_fsobjects;
     dir = new ApfsDir(*volume);
 }
 
 APFSWriter::~APFSWriter() {
     delete dir;
-    printf("Wrote %" PRIu64 "/%" PRIu64 " objects\n", count, total_object_count);
+    Utilities::print_progress(count, total_object_count, true);
 }
 
 bool APFSWriter::write_contents_of_tree(uint64_t inode) {
@@ -46,7 +47,7 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
     for (size_t i = 0; i < dir_list.size(); i++) {
         // do not keep calling printf
         if (count % 50 == 0) {
-            printf("Wrote %" PRIu64 "/%" PRIu64 " objects\r", count, total_object_count);
+            Utilities::print_progress(count, total_object_count, false);
             fflush(stdout);
         }
         count++;
@@ -63,7 +64,7 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
     }
 
     // reset dir for the next volume
-    return 0;
+    return true;
 }
 
 bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
