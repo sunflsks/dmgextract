@@ -15,6 +15,7 @@
 #define S_ISLNK(m) (((m)&S_IFMT) == S_IFLNK)
 #endif
 
+#define BUFFER_SIZE 4096
 #define APFS_ROOT_INODE 2
 
 static bool is_inode_compressed(ApfsDir::Inode inode) {
@@ -85,17 +86,32 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
             return false;
         }
         DecompressFile(*dir, inode, file_contents, compressed);
+        std::ofstream output(name, std::ios::binary);
+        output.write((char*)file_contents.data(), file_contents.size());
+        output.close();
     }
 
     else {
+        std::ofstream output(name, std::ios::binary);
+
         uint64_t size = inodeobj.ds_size;
+        uint64_t curpos = 0;
         file_contents.resize(size);
-        dir->ReadFile(file_contents.data(), inodeobj.private_id, 0, size);
+
+        for (curpos = 0; curpos < size / BUFFER_SIZE; curpos++) {
+            dir->ReadFile(
+              file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, BUFFER_SIZE);
+            output.write((char*)file_contents.data(), BUFFER_SIZE);
+        }
+        if (size % BUFFER_SIZE) {
+            dir->ReadFile(
+              file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, size % BUFFER_SIZE);
+            output.write((char*)file_contents.data(), size % BUFFER_SIZE);
+        }
+
+        output.close();
     }
 
-    std::ofstream output(name, std::ios::binary);
-    output.write((char*)file_contents.data(), file_contents.size());
-    output.close();
     chmod(name.c_str(), mode & 07777);
     return true;
 }
