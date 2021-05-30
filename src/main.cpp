@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
     }
 
     if (std::filesystem::exists(output_dir)) {
-        Utilities::print(
-          Utilities::MSG_STATUS_ERROR,
-          "Will not write to an existing directory/file. Please delete/move it and try again.\n");
-        return 2;
+            Utilities::print(
+              Utilities::MSG_STATUS_ERROR,
+              "Will not write to an existing directory/file. Please delete/move it and try
+       again.\n"); return 2;
     }
 
     APFSHandler handler(device_name, output_dir);
