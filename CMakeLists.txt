@@ -93,5 +93,5 @@ add_library(apfs
 
 include_directories(lib lib/lzfse/src)
 
-add_executable(dmgextract src/APFSWriter.cpp src/APFSHandler.cpp src/main.cpp src/utils.cpp)
+add_executable(dmgextract src/APFS/APFSWriter.cpp src/APFS/APFSHandler.cpp src/main.cpp src/utils.cpp)
 target_link_libraries(dmgextract apfs lzfse bz2 z)
