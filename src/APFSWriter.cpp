@@ -98,6 +98,11 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
         dir->ReadFile(
           file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, size % BUFFER_SIZE);
         output.write((char*)file_contents.data(), size % BUFFER_SIZE);
+        if (!output.good()) {
+            std::error_code ec(errno, std::system_category());
+            throw std::filesystem::filesystem_error("Unable to write to output " + name, ec);
+            return false;
+        }
     }
 
     output.close();
@@ -129,6 +134,12 @@ bool APFSWriter::handle_compressed_file(uint64_t inode, const std::string& name)
     }
 
     output.write((char*)file_contents.data(), file_contents.size());
+    if (!output.good()) {
+        std::error_code ec(errno, std::system_category());
+        throw std::filesystem::filesystem_error("Unable to write to output " + name, ec);
+        return false;
+    }
+
     output.close();
     return true;
 }
