@@ -18,13 +18,14 @@ bool APFSHandler::init() {
     }
 
     size = device->GetSize();
-    Utilities::print(
-      Utilities::MSG_STATUS_SUCCESS, "Found device %" PRIu64 " MB large\n", size / (1024 * 1024));
     if (size == 0) {
         Utilities::print(Utilities::MSG_STATUS_ERROR,
                          "Device should not have a size of 0. It's probably invalid.\n");
         return false;
     }
+
+    Utilities::print(
+      Utilities::MSG_STATUS_SUCCESS, "Found device %" PRIu64 " MB large\n", size / (1024 * 1024));
 
     // If a disk image, open it up and find the offset.
     GptPartitionMap gpt;
@@ -42,7 +43,6 @@ bool APFSHandler::init() {
     }
 
     container = new ApfsContainer(device, offset, size);
-
     if (!container->Init()) {
         Utilities::print(Utilities::MSG_STATUS_ERROR, "Could not initialize the APFS container.\n");
         return false;
@@ -53,6 +53,7 @@ bool APFSHandler::init() {
         Utilities::print(Utilities::MSG_STATUS_ERROR, "Volume count should not be zero.\n");
         return false;
     }
+
     Utilities::print(
       Utilities::MSG_STATUS_SUCCESS, "Found APFS filesystem! Volume count: %d\n", volcnt);
     return true;

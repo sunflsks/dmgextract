@@ -74,9 +74,10 @@ int main(int argc, char** argv) {
     }
 
     APFSHandler handler(device_name, output_dir);
-    if (!handler.init()) {
-        Utilities::print(Utilities::MSG_STATUS_WARNING, "Not APFS. Trying HFS+ instead...\n");
-    } else {
+    if (handler.init()) {
         return !handler.write();
     }
+
+    Utilities::print(Utilities::MSG_STATUS_WARNING, "Not APFS. Trying HFS+ instead...\n");
+    // hfs crap here
 }

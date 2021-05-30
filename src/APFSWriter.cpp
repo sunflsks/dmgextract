@@ -52,6 +52,7 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
             fflush(stdout);
         }
         count++;
+
         mode_t mode = (dir_list[i].flags & DREC_TYPE_MASK) << 12;
         if (S_ISDIR(mode)) {
             handle_directory(dir_list[i].file_id, out + "/" + dir_list[i].name);
@@ -94,6 +95,7 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
         dir->ReadFile(file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, BUFFER_SIZE);
         output.write((char*)file_contents.data(), BUFFER_SIZE);
     }
+
     if (size % BUFFER_SIZE) {
         dir->ReadFile(
           file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, size % BUFFER_SIZE);
