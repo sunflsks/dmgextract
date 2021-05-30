@@ -72,60 +72,64 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
     ApfsDir::Inode inodeobj;
     dir->GetInode(inodeobj, inode);
 
+    if (is_inode_compressed(inodeobj)) {
+        return handle_compressed_file(inode, name);
+    }
+
     mode_t mode = inodeobj.mode;
     std::vector<uint8_t> file_contents(4096);
 
-    if (is_inode_compressed(inodeobj)) {
-        std::vector<uint8_t> compressed(4096);
-        bool rc = dir->GetAttribute(compressed, inode, "com.apple.decmpfs");
-        if (!rc) {
-            fprintf(stderr,
-                    "File %s seems to be compressed, but has no com.apple.decmpfs attribute. "
-                    "Weird! Not writing this file out.\n",
-                    name.c_str());
-            return false;
-        }
-
-        DecompressFile(*dir, inode, file_contents, compressed);
-
-        std::ofstream output(name, std::ios::binary);
-        if (!output.good()) {
-            std::error_code ec(errno, std::system_category());
-            throw std::filesystem::filesystem_error("Unable to open output " + name, ec);
-            return false;
-        }
-
-        output.write((char*)file_contents.data(), file_contents.size());
-        output.close();
+    std::ofstream output(name, std::ios::binary);
+    if (!output.good()) {
+        std::error_code ec(errno, std::system_category());
+        throw std::filesystem::filesystem_error("Unable to open output " + name, ec);
+        return false;
     }
 
-    else {
-        std::ofstream output(name, std::ios::binary);
-        if (!output.good()) {
-            std::error_code ec(errno, std::system_category());
-            throw std::filesystem::filesystem_error("Unable to open output " + name, ec);
-            return false;
-        }
+    uint64_t size = inodeobj.ds_size;
+    uint64_t curpos = 0;
+    file_contents.resize(size);
 
-        uint64_t size = inodeobj.ds_size;
-        uint64_t curpos = 0;
-        file_contents.resize(size);
-
-        for (curpos = 0; curpos < size / BUFFER_SIZE; curpos++) {
-            dir->ReadFile(
-              file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, BUFFER_SIZE);
-            output.write((char*)file_contents.data(), BUFFER_SIZE);
-        }
-        if (size % BUFFER_SIZE) {
-            dir->ReadFile(
-              file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, size % BUFFER_SIZE);
-            output.write((char*)file_contents.data(), size % BUFFER_SIZE);
-        }
-
-        output.close();
+    for (curpos = 0; curpos < size / BUFFER_SIZE; curpos++) {
+        dir->ReadFile(file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, BUFFER_SIZE);
+        output.write((char*)file_contents.data(), BUFFER_SIZE);
     }
+    if (size % BUFFER_SIZE) {
+        dir->ReadFile(
+          file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, size % BUFFER_SIZE);
+        output.write((char*)file_contents.data(), size % BUFFER_SIZE);
+    }
+
+    output.close();
 
     chmod(name.c_str(), mode & 07777);
+    return true;
+}
+
+bool APFSWriter::handle_compressed_file(uint64_t inode, const std::string& name) {
+    std::vector<uint8_t> compressed(4096);
+    std::vector<uint8_t> file_contents(4096);
+
+    bool rc = dir->GetAttribute(compressed, inode, "com.apple.decmpfs");
+    if (!rc) {
+        fprintf(stderr,
+                "File %s seems to be compressed, but has no com.apple.decmpfs attribute. "
+                "Weird! Not writing this file out.\n",
+                name.c_str());
+        return false;
+    }
+
+    DecompressFile(*dir, inode, file_contents, compressed);
+
+    std::ofstream output(name, std::ios::binary);
+    if (!output.good()) {
+        std::error_code ec(errno, std::system_category());
+        throw std::filesystem::filesystem_error("Unable to open output " + name, ec);
+        return false;
+    }
+
+    output.write((char*)file_contents.data(), file_contents.size());
+    output.close();
     return true;
 }
 
