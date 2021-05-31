@@ -15,6 +15,32 @@ int Utilities::print(Utilities::Status status, const char* fmt, ...) {
     const char* prefix = nullptr;
     const char* reset = "\033[0m";
 
+#ifdef WIN32
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(console, &info);
+
+    switch (status) {
+        case MSG_STATUS_SUCCESS: {
+            SetConsoleTextAttribute(console, FOREGROUND_INTENSITY | FOREGROUND_GREEN);
+            output_stream = stdout;
+            break;
+        }
+
+        case MSG_STATUS_WARNING: {
+            SetConsoleTextAttribute(console,
+                                    FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED);
+            output_stream = stderr;
+            break;
+        }
+
+        case MSG_STATUS_ERROR: {
+            SetConsoleTextAttribute(console, FOREGROUND_INTENSITY | FOREGROUND_RED);
+            output_stream = stderr;
+            break;
+        }
+    }
+#else
     switch (status) {
         case MSG_STATUS_SUCCESS: {
             output_stream = stdout;
@@ -41,13 +67,18 @@ int Utilities::print(Utilities::Status status, const char* fmt, ...) {
     }
 
     fprintf(output_stream, prefix);
+#endif // WIN32
 
     va_list args;
     va_start(args, fmt);
 
     int ret = vfprintf(output_stream, fmt, args);
     va_end(args);
+#ifdef WIN32
+    SetConsoleTextAttribute(console, info.wAttributes);
+#else
     fputs(reset, output_stream);
+#endif // WIN32
     return ret;
 }
 

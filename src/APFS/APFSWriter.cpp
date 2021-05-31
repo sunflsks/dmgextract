@@ -65,7 +65,6 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
         }
     }
 
-    // reset dir for the next volume
     return true;
 }
 
