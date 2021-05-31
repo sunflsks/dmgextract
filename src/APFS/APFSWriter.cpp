@@ -93,6 +93,11 @@ bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
     for (curpos = 0; curpos < size / BUFFER_SIZE; curpos++) {
         dir->ReadFile(file_contents.data(), inodeobj.private_id, curpos * BUFFER_SIZE, BUFFER_SIZE);
         output.write((char*)file_contents.data(), BUFFER_SIZE);
+        if (!output.good()) {
+            std::error_code ec(errno, std::system_category());
+            throw std::filesystem::filesystem_error("Unable to write to output " + name, ec);
+            return false;
+        }
     }
 
     if (size % BUFFER_SIZE) {
