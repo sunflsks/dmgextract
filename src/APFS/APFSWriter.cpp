@@ -50,7 +50,6 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
         // do not keep calling printf
         if (count % 50 == 0) {
             Utilities::print_progress(count, total_object_count, false);
-            fflush(stdout);
         }
         count++;
 
