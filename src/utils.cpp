@@ -133,7 +133,7 @@ void Utilities::win32_get_sanitized_filename(std::string& input, char replace) {
     for (uint64_t i = 0; i < input.length(); i++) {
         if (strchr(win32_forbidden_filename_characters, buf[i])) {
             if (dmgextract_verbose) {
-                print(MSG_STATUS_ERROR, "Replacing forbidden character in %s\n", input.c_str());
+                print(MSG_STATUS_WARNING, "Replacing forbidden character in %s\n", input.c_str());
             }
             buf[i] = replace;
         }

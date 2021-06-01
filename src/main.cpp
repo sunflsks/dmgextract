@@ -12,7 +12,7 @@
 #include <iostream>
 #include <memory>
 
-bool dmgextract_verbose = true;
+bool dmgextract_verbose = false;
 
 // The inode for '/' on all APFS filesystems.
 #define APFS_ROOT_INODE 2
@@ -25,7 +25,6 @@ int main(int argc, char** argv) {
     const char* device_name = nullptr;
     const char* output_dir = nullptr;
     char opt;
-    bool vflag = false;
 
 #ifdef WIN32
     Utilities::print(Utilities::MSG_STATUS_WARNING,
@@ -33,7 +32,7 @@ int main(int argc, char** argv) {
                      "for symlink support.\n");
 #endif // WIN32
 
-    while ((opt = getopt(argc, argv, "i:o:v:")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:v")) != -1) {
         switch (opt) {
             case 'i': {
                 device_name = optarg;
@@ -46,7 +45,7 @@ int main(int argc, char** argv) {
             }
 
             case 'v': {
-                vflag = true;
+                dmgextract_verbose = true;
                 break;
             }
 
