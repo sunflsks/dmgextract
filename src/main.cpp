@@ -12,6 +12,8 @@
 #include <iostream>
 #include <memory>
 
+bool dmgextract_verbose = true;
+
 // The inode for '/' on all APFS filesystems.
 #define APFS_ROOT_INODE 2
 

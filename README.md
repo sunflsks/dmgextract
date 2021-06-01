@@ -7,3 +7,5 @@
 ### TODO
 
 - Add HFS(+) support
+- Find out why win32 is so slow
+- Rewrite the win32 filename sanitizer, it's so bad

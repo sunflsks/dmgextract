@@ -42,7 +42,7 @@ bool APFSWriter::write_contents_of_tree(uint64_t inode) {
     return write_contents_of_tree_with_name(inode, output_prefix);
 }
 
-bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::string& out) {
+bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, std::string& out) {
     std::vector<ApfsDir::DirRec> dir_list;
     dir->ListDirectory(dir_list, inode);
 
@@ -55,11 +55,14 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
 
         mode_t mode = (dir_list[i].flags & DREC_TYPE_MASK) << 12;
         if (S_ISDIR(mode)) {
-            handle_directory(dir_list[i].file_id, out + "/" + dir_list[i].name);
+            std::string name = out + "/" + dir_list[i].name;
+            handle_directory(dir_list[i].file_id, name);
         } else if (S_ISREG(mode)) {
-            handle_regular_file(dir_list[i].file_id, out + "/" + dir_list[i].name);
+            std::string name = out + "/" + dir_list[i].name;
+            handle_regular_file(dir_list[i].file_id, name);
         } else if (S_ISLNK(mode)) {
-            handle_symlink(dir_list[i].file_id, out + "/" + dir_list[i].name);
+            std::string name = out + "/" + dir_list[i].name;
+            handle_symlink(dir_list[i].file_id, name);
         } else {
             fprintf(stderr, "Unknown object type: mode is %d\n", mode);
         }
@@ -77,7 +80,7 @@ bool APFSWriter::handle_regular_file(uint64_t inode, std::string name) {
     }
 
 #ifdef WIN32
-    std::replace(name.begin(), name.end(), '\\', '[');
+    Utilities::win32_get_sanitized_filename(name, '.');
 #endif
 
     mode_t mode = inodeobj.mode;
@@ -121,9 +124,12 @@ bool APFSWriter::handle_regular_file(uint64_t inode, std::string name) {
     return true;
 }
 
-bool APFSWriter::handle_compressed_file(uint64_t inode, const std::string& name) {
+bool APFSWriter::handle_compressed_file(uint64_t inode, std::string& name) {
     std::vector<uint8_t> compressed(4096);
     std::vector<uint8_t> file_contents(4096);
+#ifdef WIN32
+    Utilities::win32_get_sanitized_filename(name, '.');
+#endif
 
     bool rc = dir->GetAttribute(compressed, inode, "com.apple.decmpfs");
     if (!rc) {
@@ -154,13 +160,19 @@ bool APFSWriter::handle_compressed_file(uint64_t inode, const std::string& name)
     return true;
 }
 
-bool APFSWriter::handle_directory(uint64_t inode, const std::string& name) {
+bool APFSWriter::handle_directory(uint64_t inode, std::string& name) {
+#ifdef WIN32
+    Utilities::win32_get_sanitized_filename(name, '.');
+#endif
     std::filesystem::create_directories(name);
     write_contents_of_tree_with_name(inode, name);
     return 0;
 }
 
-bool APFSWriter::handle_symlink(uint64_t inode, const std::string& name) {
+bool APFSWriter::handle_symlink(uint64_t inode, std::string& name) {
+#ifdef WIN32
+    Utilities::win32_get_sanitized_filename(name, '.');
+#endif
     std::vector<uint8_t> buffer;
     bool rc = dir->GetAttribute(buffer, inode, "com.apple.fs.symlink");
     if (!rc) {

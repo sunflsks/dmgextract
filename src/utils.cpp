@@ -1,6 +1,8 @@
 #include "utils.hpp"
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
+#include <string>
 
 #ifdef WIN32
 #include <windows.h>
@@ -8,6 +10,7 @@
 #include <sys/ioctl.h>
 #endif // WIN32
 
+static const char* win32_forbidden_filename_characters = "<>:\"\\|?*";
 static int get_terminal_width();
 
 int Utilities::print(Utilities::Status status, const char* fmt, ...) {
@@ -122,4 +125,17 @@ static int get_terminal_width() {
     ret = ws.ws_col;
 #endif
     return ret;
+}
+
+void Utilities::win32_get_sanitized_filename(std::string& input, char replace) {
+    char* buf = input.data();
+
+    for (uint64_t i = 0; i < input.length(); i++) {
+        if (strchr(win32_forbidden_filename_characters, buf[i])) {
+            if (dmgextract_verbose) {
+                print(MSG_STATUS_ERROR, "Replacing forbidden character in %s\n", input.c_str());
+            }
+            buf[i] = replace;
+        }
+    }
 }
