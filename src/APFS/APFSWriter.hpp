@@ -18,6 +18,6 @@ class APFSWriter {
     bool write_contents_of_tree_with_name(uint64_t inode, const std::string& name);
     bool handle_symlink(uint64_t inode, const std::string& name);
     bool handle_directory(uint64_t inode, const std::string& name);
-    bool handle_regular_file(uint64_t inode, const std::string& name);
+    bool handle_regular_file(uint64_t inode, std::string name);
     bool handle_compressed_file(uint64_t inode, const std::string& name);
 };

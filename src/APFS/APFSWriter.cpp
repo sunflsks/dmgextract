@@ -2,6 +2,7 @@
 #include "../utils.hpp"
 #include <ApfsLib/ApfsDir.h>
 #include <ApfsLib/Decmpfs.h>
+#include <algorithm>
 #include <cinttypes>
 #include <filesystem>
 #include <fstream>
@@ -68,13 +69,17 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
     return true;
 }
 
-bool APFSWriter::handle_regular_file(uint64_t inode, const std::string& name) {
+bool APFSWriter::handle_regular_file(uint64_t inode, std::string name) {
     ApfsDir::Inode inodeobj;
     dir->GetInode(inodeobj, inode);
 
     if (is_inode_compressed(inodeobj)) {
         return handle_compressed_file(inode, name);
     }
+
+#ifdef WIN32
+    std::replace(name.begin(), name.end(), '\\', '[');
+#endif
 
     mode_t mode = inodeobj.mode;
     std::vector<uint8_t> file_contents(4096);

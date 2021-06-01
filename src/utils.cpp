@@ -84,7 +84,10 @@ int Utilities::print(Utilities::Status status, const char* fmt, ...) {
 
 void Utilities::print_progress(uint64_t current_progress, uint64_t total_progress, bool final) {
     int width =
-      get_terminal_width() - 2; // subtract 2 for the opening and closing brackets on the bar
+      get_terminal_width() - 3; // subtract 2 for the opening and closing brackets on the bar, and
+                                // one more because the windows console automatically goes to a new
+                                // line when something is printed at the end of the console
+
     int how_much_to_print = (((float)current_progress / total_progress) * width);
     how_much_to_print = how_much_to_print < width ? how_much_to_print : width;
 
