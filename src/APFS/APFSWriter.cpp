@@ -54,17 +54,23 @@ bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::str
         count++;
 
         mode_t mode = (dir_list[i].flags & DREC_TYPE_MASK) << 12;
+        bool status = true;
         if (S_ISDIR(mode)) {
             std::string name = out + "/" + dir_list[i].name;
-            handle_directory(dir_list[i].file_id, name);
+            status = handle_directory(dir_list[i].file_id, name);
         } else if (S_ISREG(mode)) {
             std::string name = out + "/" + dir_list[i].name;
-            handle_regular_file(dir_list[i].file_id, name);
+            status = handle_regular_file(dir_list[i].file_id, name);
         } else if (S_ISLNK(mode)) {
             std::string name = out + "/" + dir_list[i].name;
-            handle_symlink(dir_list[i].file_id, name);
+            status = handle_symlink(dir_list[i].file_id, name);
         } else {
             fprintf(stderr, "Unknown object type: mode is %d\n", mode);
+        }
+
+        if (!status && dmgextract_verbose) {
+            fprintf(stderr, "An error occured.\n");
+            return false;
         }
     }
 
@@ -146,6 +152,7 @@ bool APFSWriter::handle_compressed_file(uint64_t inode, std::string& name) {
     if (!output.good()) {
         std::error_code ec(errno, std::system_category());
         throw std::filesystem::filesystem_error("Unable to open output " + name, ec);
+        output.close();
         return false;
     }
 
@@ -153,6 +160,7 @@ bool APFSWriter::handle_compressed_file(uint64_t inode, std::string& name) {
     if (!output.good()) {
         std::error_code ec(errno, std::system_category());
         throw std::filesystem::filesystem_error("Unable to write to output " + name, ec);
+        output.close();
         return false;
     }
 
