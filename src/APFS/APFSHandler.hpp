@@ -16,7 +16,7 @@ class APFSHandler {
     apfs_superblock_t superblock;
 
   public:
-    APFSHandler(std::string device_path, std::string output_directory);
+    APFSHandler(const std::string& device_path, const std::string& output_directory);
     ~APFSHandler();
     bool init();
     bool write();

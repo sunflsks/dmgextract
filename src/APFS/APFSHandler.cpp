@@ -2,9 +2,10 @@
 #include "../utils.hpp"
 #include "APFSWriter.hpp"
 
-#define APFS_ROOT_INODE 2
+constexpr int APFS_ROOT_INODE = 2;
+constexpr int MEGABYTE_SIZE = 1024 * 1024;
 
-APFSHandler::APFSHandler(std::string device_path, std::string output_directory) {
+APFSHandler::APFSHandler(const std::string& device_path, const std::string& output_directory) {
     this->device_path = device_path;
     this->output_directory = output_directory;
 }
@@ -13,7 +14,8 @@ bool APFSHandler::init() {
     device = Device::OpenDevice(device_path.c_str());
 
     if (!device) {
-        Utilities::print(Utilities::MSG_STATUS_ERROR, "Unable to open device %s.\n", device_path);
+        Utilities::print(
+          Utilities::MSG_STATUS_ERROR, "Unable to open device %s.\n", device_path.c_str());
         return false;
     }
 
@@ -25,7 +27,7 @@ bool APFSHandler::init() {
     }
 
     Utilities::print(
-      Utilities::MSG_STATUS_SUCCESS, "Found device %" PRIu64 " MB large\n", size / (1024 * 1024));
+      Utilities::MSG_STATUS_SUCCESS, "Found device %" PRIu64 " MB large\n", size / MEGABYTE_SIZE);
 
     // If a disk image, open it up and find the offset.
     GptPartitionMap gpt;

@@ -16,15 +16,15 @@
 #define S_ISLNK(m) (((m)&S_IFMT) == S_IFLNK)
 #endif
 
-#define BUFFER_SIZE 4096
-#define APFS_ROOT_INODE 2
+constexpr int BUFFER_SIZE = 4096;
+constexpr int APFS_ROOT_INODE = 2;
 
 static bool is_inode_compressed(ApfsDir::Inode inode) {
     return (inode.bsd_flags & APFS_UF_COMPRESSED) != 0;
 }
 
 APFSWriter::APFSWriter(ApfsVolume* volume,
-                       std::string output_prefix,
+                       const std::string& output_prefix,
                        const apfs_superblock_t& superblock) {
     this->volume = volume;
     this->output_prefix = output_prefix + "/";
@@ -42,7 +42,7 @@ bool APFSWriter::write_contents_of_tree(uint64_t inode) {
     return write_contents_of_tree_with_name(inode, output_prefix);
 }
 
-bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, std::string& out) {
+bool APFSWriter::write_contents_of_tree_with_name(uint64_t inode, const std::string& out) {
     std::vector<ApfsDir::DirRec> dir_list;
     dir->ListDirectory(dir_list, inode);
 

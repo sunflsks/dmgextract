@@ -68,3 +68,5 @@ CMakeUserPresets.json
 
 build
 test
+winbuild
+.vscode
